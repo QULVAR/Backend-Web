@@ -14,7 +14,6 @@
 
   if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if (!empty($_GET['save'])) {
-      // Если есть параметр save, то выводим сообщение пользователю.
       print('<div class="message">Спасибо, данные сохранены.</div>');
     }
     include('form.php');
@@ -96,13 +95,10 @@
     errp($errors);
   }
 
-  $db = new PDO('mysql:host=localhost;dbname=u67404', 'u67404', '4971288',
+  $db = new PDO('mysql:host=localhost;dbname=u67402', 'u67402', '2593797',
      [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
   
   $inQuery = implode(',', array_fill(0, count($like_lang), '?'));
-
-  //$db = new PDO('mysql:host=localhost;dbname=u67404', 'root', '');
-  //$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   
   try {
     $dbLangs = $db->prepare("SELECT id, name FROM languages WHERE name IN ($inQuery)");
@@ -143,25 +139,4 @@
     print('Error : ' . $e->getMessage());
     exit();
   }
-
-  //  stmt - это "дескриптор состояния".
-  
-  //  Именованные метки.
-  //$stmt = $db->prepare("INSERT INTO test (label,color) VALUES (:label,:color)");
-  //$stmt -> execute(['label'=>'perfect', 'color'=>'green']);
-  
-  //Еще вариант
-  /*$stmt = $db->prepare("INSERT INTO users (firstname, lastname, email) VALUES (:firstname, :lastname, :email)");
-  $stmt->bindParam(':firstname', $firstname);
-  $stmt->bindParam(':lastname', $lastname);
-  $stmt->bindParam(':email', $email);
-  $firstname = "John";
-  $lastname = "Smith";
-  $email = "john@test.com";
-  $stmt->execute();
-  */
-
-  // Делаем перенаправление.
-  // Если запись не сохраняется, но ошибок не видно, то можно закомментировать эту строку чтобы увидеть ошибку.
-  // Если ошибок при этом не видно, то необходимо настроить параметр display_errors для PHP.
   header('Location: ?save=1');
