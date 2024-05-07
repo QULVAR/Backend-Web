@@ -17,7 +17,7 @@
     $fio = (!empty($_COOKIE['fio_error']) ? $_COOKIE['fio_error'] : '');
     $phone = (!empty($_COOKIE['phone_error']) ? $_COOKIE['phone_error'] : '');
     $email = (!empty($_COOKIE['email_error']) ? $_COOKIE['email_error'] : '');
-    $birthday = (!empty($_COOKIE['birthday_error']) ? strtotime($_COOKIE['birthday_error']) : '');
+    $birthday = (!empty($_COOKIE['birthday_error']) ? $_COOKIE['birthday_error'] : '');
     $gender = (!empty($_COOKIE['gender_error']) ? $_COOKIE['gender_error'] : '');
     $like_lang = (!empty($_COOKIE['like_lang_error']) ? $_COOKIE['like_lang_error'] : '');
     $biography = (!empty($_COOKIE['biography_error']) ? $_COOKIE['biography_error'] : '');
@@ -60,7 +60,7 @@
     $fio = (!empty($_POST['fio']) ? $_POST['fio'] : '');
     $phone = (!empty($_POST['phone']) ? $_POST['phone'] : '');
     $email = (!empty($_POST['email']) ? $_POST['email'] : '');
-    $birthday = (!empty($_POST['birthday']) ? strtotime($_POST['birthday']) : '');
+    $birthday = (!empty($_POST['birthday']) ? $_POST['birthday'] : '');
     $gender = (!empty($_POST['gender']) ? $_POST['gender'] : '');
     $like_lang = (!empty($_POST['like_lang']) ? $_POST['like_lang'] : '');
     $biography = (!empty($_POST['biography']) ? $_POST['biography'] : '');
@@ -90,7 +90,7 @@
     
     if(!val_empty('fio', 'Заполните поле', empty($fio))){
       if(!val_empty('fio', 'Длина поля > 255 символов', strlen($fio) > 255)){
-        val_empty('fio', 'Поле не соответствует требованиям: <i>Фамилия Имя (Отчество)</i>, латиницей', !preg_match('/^([а-яёА-ЯЁ]+-?[а-яёА-ЯЁ]+)( [а-яёА-ЯЁ]+-?[а-яёА-ЯЁ]+){1,2}$/Diu', $fio));
+        val_empty('fio', 'Поле не соответствует требованиям: <i>Фамилия Имя (Отчество)</i>, кириллицей', !preg_match('/^([а-яёА-ЯЁ]+-?[а-яёА-ЯЁ]+)( [а-яёА-ЯЁ]+-?[а-яёА-ЯЁ]+){1,2}$/Diu', $fio));
       }
     }
     if(!val_empty('phone', 'Заполните поле', empty($phone))){
@@ -104,7 +104,7 @@
       }
     }
     if(!val_empty('birthday', "Выберите дату рождения", empty($birthday))){
-      val_empty('birthday', "Неверно введена дата рождения, дата больше настоящей", (strtotime("now") < $birthday));
+      val_empty('birthday', "Неверно введена дата рождения, дата больше настоящей", (strtotime("now") < strtotime($birthday)));
     }
     val_empty('gender', "Выберите пол", (empty($gender) || !preg_match('/^(male|female)$/', $gender)));
     if(!val_empty('like_lang', "Выберите хотя бы один язык", empty($like_lang))){
@@ -149,7 +149,7 @@
     
     try {
       $stmt = $db->prepare("INSERT INTO form_data (fio, phone, email, birthday, gender, biography) VALUES (?, ?, ?, ?, ?, ?)");
-      $stmt->execute([$fio, $phone, $email, $birthday, $gender, $biography]);
+      $stmt->execute([$fio, $phone, $email, strtotime($birthday), $gender, $biography]);
       $fid = $db->lastInsertId();
       $stmt1 = $db->prepare("INSERT INTO form_data_lang (id_form, id_lang) VALUES (?, ?)");
       foreach($languages as $row){

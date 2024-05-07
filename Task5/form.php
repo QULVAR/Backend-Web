@@ -36,12 +36,12 @@
         <div class="ent">
             <div>Пол:</div>
             <label>
-                <input type="radio" name="gender" value="male">
+                <input type="radio" name="gender" value="male" <?php if($values['gender'] == 'male') echo 'checked'; ?>>
                 <span class="<?php echo ($errors['gender'] != NULL) ? 'colred' : ''; ?>">Мужской</span>
             </label>
             <br>
             <label>
-                <input type="radio" name="gender" value="female">
+                <input type="radio" name="gender" value="female" <?php if($values['gender'] == 'female') echo 'checked'; ?>>
                 <span class="<?php echo ($errors['gender'] != NULL) ? 'colred' : ''; ?>">Женский</span>
             </label>
             <div class="errpodinp"><?php echo $messages['gender']?></div>
