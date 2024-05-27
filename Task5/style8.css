@@ -5,7 +5,8 @@ body{
 *{
     box-sizing: border-box;
 }
-label{mc	rder-radius: 8px;
+label{
+    border-radius: 8px;
     background-color: #fcfcfc;
     padding: 10px;
     margin: auto;
