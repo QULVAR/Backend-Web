@@ -14,8 +14,8 @@
   }
   else{
     require('connection.php');
-    $login = $_POST['login'];
-    $password = md5($_POST['password']);
+    $login = checkInput($_POST['login']);
+    $password = md5(checkInput($_POST['password']));
     try {
       $stmt = $db->prepare("SELECT id FROM users WHERE login = ? and password = ?");
       $stmt->execute([$login, $password]);
@@ -45,7 +45,7 @@
     <link rel="stylesheet" href="libs/bootstrap-4.0.0-dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="libs/jquery-3.4.1.min.js"></script>
-    <title>Задание 5</title>
+    <title>Задание 7</title>
 </head>
 <body>
   <div class="pform pformAuth">

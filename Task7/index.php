@@ -1,28 +1,55 @@
 <?php
   header('Content-Type: text/html; charset=UTF-8');
   session_start();
-  $log = !empty($_SESSION['login']);
+  if(strpos($_SERVER['REQUEST_URI'], 'index.php') === false){
+    header('Location: index.php');
+    exit();
+  }
+
+  include('connection.php');
+
+  $log = isset($_SESSION['login']);
+  $adminLog = isset($_SERVER['PHP_AUTH_USER']);
+  $uid = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '';
+  $getUid = isset($_GET['uid']) ? checkInput($_GET['uid']) : '';
+
+  if($adminLog){
+    if(preg_match('/^[0-9]+$/', $getUid)){
+      $uid = $getUid;
+      $log = true;
+    }
+  }
   
   function del_cook($cook, $vals = 0){
     setcookie($cook.'_error', '', 100000);
     if($vals) setcookie($cook.'_value', '', 100000);
   }
 
-  $db;
-  function conn(){
-    global $db;
-    include('connection.php');
-  }
-
   if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    $fio = (!empty($_COOKIE['fio_error']) ? $_COOKIE['fio_error'] : '');
-    $phone = (!empty($_COOKIE['phone_error']) ? $_COOKIE['phone_error'] : '');
-    $email = (!empty($_COOKIE['email_error']) ? $_COOKIE['email_error'] : '');
-    $birthday = (!empty($_COOKIE['birthday_error']) ? $_COOKIE['birthday_error'] : '');
-    $gender = (!empty($_COOKIE['gender_error']) ? $_COOKIE['gender_error'] : '');
-    $like_lang = (!empty($_COOKIE['like_lang_error']) ? $_COOKIE['like_lang_error'] : '');
-    $biography = (!empty($_COOKIE['biography_error']) ? $_COOKIE['biography_error'] : '');
-    $oznakomlen = (!empty($_COOKIE['oznakomlen_error']) ? $_COOKIE['oznakomlen_error'] : '');
+    if(($adminLog && isset($getUid)) || !$adminLog){
+      $cookAdmin = (isset($_COOKIE['admin_value']) ? $_COOKIE['admin_value'] : '');
+      if($cookAdmin == '1'){
+        del_cook('fio', 1);
+        del_cook('phone', 1);
+        del_cook('email', 1);
+        del_cook('birthday', 1);
+        del_cook('gender', 1);
+        del_cook('like_lang', 1);
+        del_cook('biography', 1);
+        del_cook('oznakomlen', 1);
+        del_cook('admin', 1);
+      }
+    }
+
+    $csrf_error = (isset($_COOKIE['csrf_error']) ? checkInput($_COOKIE['csrf_error']) : '');
+    $fio = (isset($_COOKIE['fio_error']) ? checkInput($_COOKIE['fio_error']) : '');
+    $phone = (isset($_COOKIE['phone_error']) ? checkInput($_COOKIE['phone_error']) : '');
+    $email = (isset($_COOKIE['email_error']) ? checkInput($_COOKIE['email_error']) : '');
+    $birthday = (isset($_COOKIE['birthday_error']) ? checkInput($_COOKIE['birthday_error']) : '');
+    $gender = (isset($_COOKIE['gender_error']) ? checkInput($_COOKIE['gender_error']) : '');
+    $like_lang = (isset($_COOKIE['like_lang_error']) ? checkInput($_COOKIE['like_lang_error']) : '');
+    $biography = (isset($_COOKIE['biography_error']) ? checkInput($_COOKIE['biography_error']) : '');
+    $oznakomlen = (isset($_COOKIE['oznakomlen_error']) ? checkInput($_COOKIE['oznakomlen_error']) : '');
 
     $errors = array();
     $messages = array();
@@ -31,7 +58,7 @@
     
     function setVal($enName, $param){
       global $values;
-      $values[$enName] = empty($param) ? '' : strip_tags($param);
+      $values[$enName] = empty($param) ? '' : checkInput($param);
     }
 
     function val_empty($enName, $val){
@@ -39,23 +66,27 @@
       if($error) 
         $error = empty($_COOKIE[$enName.'_error']);
 
-      $errors[$enName] = !empty($_COOKIE[$enName.'_error']);
+      $errors[$enName] = isset($_COOKIE[$enName.'_error']);
       $messages[$enName] = "<div class='messageError'>$val</div>";
-      $values[$enName] = empty($_COOKIE[$enName.'_value']) ? '' : strip_tags($_COOKIE[$enName.'_value']);
+      $values[$enName] = empty($_COOKIE[$enName.'_value']) ? '' : checkInput($_COOKIE[$enName.'_value']);
       del_cook($enName);
       return;
     }
 
-    if (!empty($_COOKIE['save'])) {
+    if (isset($_COOKIE['csrf_error'])) {
+      $messages['error'] = 'Не соответствие CSRF токена';
+      setcookie('csrf_error', '', 100000);
+    }
+    if (isset($_COOKIE['save'])) {
       setcookie('save', '', 100000);
       setcookie('login', '', 100000);
       setcookie('password', '', 100000);
       $messages['success'] = 'Спасибо, результаты сохранены.';
-      if (!empty($_COOKIE['password'])) {
+      if (isset($_COOKIE['password'])) {
         $messages['info'] = sprintf('Вы можете <a href="login.php">войти</a> с логином <strong>%s</strong>
           и паролем <strong>%s</strong> для изменения данных.',
-          strip_tags($_COOKIE['login']),
-          strip_tags($_COOKIE['password']));
+          checkInput($_COOKIE['login']),
+          checkInput($_COOKIE['password']));
       }
     }
     
@@ -69,15 +100,11 @@
     val_empty('oznakomlen', $oznakomlen);
     
     $like_langsa = explode(',', $values['like_lang']);
-
-    // Если нет предыдущих ошибок ввода, есть кука сессии, начали сессию и
-    // ранее в сессию записан факт успешного логина.
-    if ($error && !empty($_SESSION['login'])) {
-
-      conn();
+    
+    if ($error && $log) {
       try {
         $dbFD = $db->prepare("SELECT * FROM form_data WHERE user_id = ?");
-        $dbFD->execute([$_SESSION['user_id']]);
+        $dbFD->execute([$uid]);
         $fet = $dbFD->fetchAll(PDO::FETCH_ASSOC)[0];
         $form_id = $fet['id'];
         $_SESSION['form_id'] = $form_id;
@@ -107,26 +134,38 @@
     include('form.php');
   }
   else {
-    $fio = (!empty($_POST['fio']) ? $_POST['fio'] : '');
-    $phone = (!empty($_POST['phone']) ? $_POST['phone'] : '');
-    $email = (!empty($_POST['email']) ? $_POST['email'] : '');
-    $birthday = (!empty($_POST['birthday']) ? $_POST['birthday'] : '');
-    $gender = (!empty($_POST['gender']) ? $_POST['gender'] : '');
-    $like_lang = (!empty($_POST['like_lang']) ? $_POST['like_lang'] : '');
-    $biography = (!empty($_POST['biography']) ? $_POST['biography'] : '');
-    $oznakomlen = (!empty($_POST['oznakomlen']) ? $_POST['oznakomlen'] : '');
+    $csrf_tokens = (isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '');
+    $fio = (isset($_POST['fio']) ? checkInput($_POST['fio']) : '');
+    $phone = (isset($_POST['phone']) ? checkInput($_POST['phone']) : '');
+    $email = (isset($_POST['email']) ? checkInput($_POST['email']) : '');
+    $birthday = (isset($_POST['birthday']) ? checkInput($_POST['birthday']) : '');
+    $gender = (isset($_POST['gender']) ? checkInput($_POST['gender']) : '');
+    $like_lang = (isset($_POST['like_lang']) ? $_POST['like_lang'] : '');
+    $biography = (isset($_POST['biography']) ? checkInput($_POST['biography']) : '');
+    $oznakomlen = (isset($_POST['oznakomlen']) ? checkInput($_POST['oznakomlen']) : '');
+
+    if($_SESSION['csrf_token'] != $csrf_tokens){
+      setcookie('csrf_error', '1', time() + 24 * 60 * 60); //сохраняем на сутки
+      header('Location: index.php'.(($getUid != NULL) ? '?uid='.$uid : ''));
+      exit();
+    }
 
     if(isset($_POST['logout_form'])){
-      del_cook('fio', 1);
-      del_cook('phone', 1);
-      del_cook('email', 1);
-      del_cook('birthday', 1);
-      del_cook('gender', 1);
-      del_cook('like_lang', 1);
-      del_cook('biography', 1);
-      del_cook('oznakomlen', 1);
-      session_destroy();
-      header('Location: ./');
+      if($adminLog && empty($_SESSION['login'])){
+        header('Location: admin.php');
+      }
+      else{
+        del_cook('fio', 1);
+        del_cook('phone', 1);
+        del_cook('email', 1);
+        del_cook('birthday', 1);
+        del_cook('gender', 1);
+        del_cook('like_lang', 1);
+        del_cook('biography', 1);
+        del_cook('oznakomlen', 1);
+        session_destroy();
+        header('Location: index.php'.(($getUid != NULL) ? '?uid='.$uid : ''));
+      }
       exit();
     }
 
@@ -137,7 +176,7 @@
       $res = false;
       $setVal = $_POST[$cook];
       if ($usl) {
-        setcookie($cook.'_error', $comment, time() + 24 * 60 * 60);
+        setcookie($cook.'_error', $comment, time() + 24 * 60 * 60); //сохраняем на сутки
         $error = true;
         $res = true;
       }
@@ -147,7 +186,7 @@
         $setVal = ($like_lang != '') ? implode(",", $like_lang) : '';
       }
       
-      setcookie($cook.'_value', $setVal, time() + 30 * 24 * 60 * 60);
+      setcookie($cook.'_value', $setVal, time() + 30 * 24 * 60 * 60); //сохраняем на месяц
       return $res;
     }
     
@@ -171,12 +210,11 @@
     }
     val_empty('gender', "Выберите пол", (empty($gender) || !preg_match('/^(male|female)$/', $gender)));
     if(!val_empty('like_lang', "Выберите хотя бы один язык", empty($like_lang))){
-      conn();
       try {
         $inQuery = implode(',', array_fill(0, count($like_lang), '?'));
         $dbLangs = $db->prepare("SELECT id, name FROM languages WHERE name IN ($inQuery)");
         foreach ($like_lang as $key => $value) {
-          $dbLangs->bindValue(($key+1), $value);
+          $dbLangs->bindValue(($key+1), checkInput($value));
         }
         $dbLangs->execute();
         $languages = $dbLangs->fetchAll(PDO::FETCH_ASSOC);
@@ -194,7 +232,7 @@
     val_empty('oznakomlen', "Ознакомьтесь с контрактом", empty($oznakomlen));
     
     if ($error) {
-      header('Location: index.php');
+      header('Location: index.php'.(($getUid != NULL) ? '?uid='.$uid : ''));
       exit();
     }
     else {
@@ -207,11 +245,9 @@
       del_cook('biography');
       del_cook('oznakomlen');
     }
-
     if ($log) {
-      
       $stmt = $db->prepare("UPDATE form_data SET fio = ?, phone = ?, email = ?, birthday = ?, gender = ?, biography = ? WHERE user_id = ?");
-      $stmt->execute([$fio, $phone, $email, strtotime($birthday), $gender, $biography, $_SESSION['user_id']]);
+      $stmt->execute([$fio, $phone, $email, strtotime($birthday), $gender, $biography, $uid]);
 
       $stmt = $db->prepare("DELETE FROM form_data_lang WHERE id_form = ?");
       $stmt->execute([$_SESSION['form_id']]);
@@ -220,6 +256,8 @@
       foreach($languages as $row){
           $stmt1->execute([$_SESSION['form_id'], $row['id']]);
       }
+      if($adminLog) 
+        setcookie('admin_value', '1', time() + 30 * 24 * 60 * 60);
     }
     else {
       $login = substr(uniqid(), 0, 4).rand(10, 100);
@@ -255,6 +293,6 @@
       setcookie('oznakomlen_value', $oznakomlen, time() + 24 * 60 * 60 * 365);
     }
     setcookie('save', '1');
-    header('Location: ./');
+    header('Location: index.php'.(($getUid != NULL) ? '?uid='.$uid : ''));
   }
 ?>

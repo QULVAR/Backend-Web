@@ -1,7 +1,22 @@
 <?php
   header('Content-Type: text/html; charset=UTF-8');
   session_start();
+  if(strpos($_SERVER['REQUEST_URI'], 'index.php') === false){
+    header('Location: index.php');
+    exit();
+  }
+
   $log = !empty($_SESSION['login']);
+  $adminLog = !empty($_SERVER['PHP_AUTH_USER']);
+  $uid = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '';
+  $getUid = isset($_GET['uid']) ? strip_tags($_GET['uid']) : '';
+
+  if($adminLog){
+    if(preg_match('/^[0-9]+$/', $getUid)){
+      $uid = $getUid;
+      $log = true;
+    }
+  }
   
   function del_cook($cook, $vals = 0){
     setcookie($cook.'_error', '', 100000);
@@ -15,6 +30,21 @@
   }
 
   if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    if(($adminLog && !empty($getUid)) || !$adminLog){
+      $cookAdmin = (!empty($_COOKIE['admin_value']) ? $_COOKIE['admin_value'] : '');
+      if($cookAdmin == '1'){
+        del_cook('fio', 1);
+        del_cook('phone', 1);
+        del_cook('email', 1);
+        del_cook('birthday', 1);
+        del_cook('gender', 1);
+        del_cook('like_lang', 1);
+        del_cook('biography', 1);
+        del_cook('oznakomlen', 1);
+        del_cook('admin', 1);
+      }
+    }
+
     $fio = (!empty($_COOKIE['fio_error']) ? $_COOKIE['fio_error'] : '');
     $phone = (!empty($_COOKIE['phone_error']) ? $_COOKIE['phone_error'] : '');
     $email = (!empty($_COOKIE['email_error']) ? $_COOKIE['email_error'] : '');
@@ -69,15 +99,13 @@
     val_empty('oznakomlen', $oznakomlen);
     
     $like_langsa = explode(',', $values['like_lang']);
-
-    // Если нет предыдущих ошибок ввода, есть кука сессии, начали сессию и
-    // ранее в сессию записан факт успешного логина.
-    if ($error && !empty($_SESSION['login'])) {
+    
+    if ($error && $log) {
 
       conn();
       try {
         $dbFD = $db->prepare("SELECT * FROM form_data WHERE user_id = ?");
-        $dbFD->execute([$_SESSION['user_id']]);
+        $dbFD->execute([$uid]);
         $fet = $dbFD->fetchAll(PDO::FETCH_ASSOC)[0];
         $form_id = $fet['id'];
         $_SESSION['form_id'] = $form_id;
@@ -117,16 +145,21 @@
     $oznakomlen = (!empty($_POST['oznakomlen']) ? $_POST['oznakomlen'] : '');
 
     if(isset($_POST['logout_form'])){
-      del_cook('fio', 1);
-      del_cook('phone', 1);
-      del_cook('email', 1);
-      del_cook('birthday', 1);
-      del_cook('gender', 1);
-      del_cook('like_lang', 1);
-      del_cook('biography', 1);
-      del_cook('oznakomlen', 1);
-      session_destroy();
-      header('Location: ./');
+      if($adminLog && empty($_SESSION['login'])){
+        header('Location: admin.php');
+      }
+      else{
+        del_cook('fio', 1);
+        del_cook('phone', 1);
+        del_cook('email', 1);
+        del_cook('birthday', 1);
+        del_cook('gender', 1);
+        del_cook('like_lang', 1);
+        del_cook('biography', 1);
+        del_cook('oznakomlen', 1);
+        session_destroy();
+        header('Location: index.php'.(($getUid != NULL) ? '?uid='.$uid : ''));
+      }
       exit();
     }
 
@@ -194,7 +227,7 @@
     val_empty('oznakomlen', "Ознакомьтесь с контрактом", empty($oznakomlen));
     
     if ($error) {
-      header('Location: index.php');
+      header('Location: index.php'.(($getUid != NULL) ? '?uid='.$uid : ''));
       exit();
     }
     else {
@@ -207,11 +240,9 @@
       del_cook('biography');
       del_cook('oznakomlen');
     }
-
     if ($log) {
-      
       $stmt = $db->prepare("UPDATE form_data SET fio = ?, phone = ?, email = ?, birthday = ?, gender = ?, biography = ? WHERE user_id = ?");
-      $stmt->execute([$fio, $phone, $email, strtotime($birthday), $gender, $biography, $_SESSION['user_id']]);
+      $stmt->execute([$fio, $phone, $email, strtotime($birthday), $gender, $biography, $uid]);
 
       $stmt = $db->prepare("DELETE FROM form_data_lang WHERE id_form = ?");
       $stmt->execute([$_SESSION['form_id']]);
@@ -220,6 +251,8 @@
       foreach($languages as $row){
           $stmt1->execute([$_SESSION['form_id'], $row['id']]);
       }
+      if($adminLog) 
+        setcookie('admin_value', '1', time() + 30 * 24 * 60 * 60);
     }
     else {
       $login = substr(uniqid(), 0, 4).rand(10, 100);
@@ -255,6 +288,6 @@
       setcookie('oznakomlen_value', $oznakomlen, time() + 24 * 60 * 60 * 365);
     }
     setcookie('save', '1');
-    header('Location: ./');
+    header('Location: index.php'.(($getUid != NULL) ? '?uid='.$uid : ''));
   }
 ?>
