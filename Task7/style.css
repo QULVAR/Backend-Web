@@ -9,11 +9,11 @@ label{
     margin-bottom: 0;
 }
 form{
-    width: 400px;
-    border: 1px #aaa solid;
-    border-radius: 8px;
-    background-color: #fcfcfc;
-    padding: 10px;
+    width: 600px;
+    border: 3px red solid;
+    border-radius: 40px;
+    background-color: gray;
+    padding: 40px;
     margin: auto;
     position: relative;
 }
@@ -29,8 +29,8 @@ form input,
 form textarea,
 form select{
     outline: none;
-    border: 1px #aaa solid;
-    border-radius: 3px;
+    border: 2px red solid;
+    border-radius: 10px;
     padding: 3px 6px;
 }
 .w100{
@@ -57,11 +57,11 @@ form textarea{
 form button,
 .logout_form,
 .login_form{
-    width: 100px;
+    width: 150px;
     height: 30px;
-    background: rgb(60, 255, 190);
-    border: none;
-    border-radius: 5px;
+    background: aqua;
+    border: 2px red solid;
+    border-radius: 10px;
     cursor: pointer;
     margin-left: calc(50% - 50px);
     outline: none !important;
@@ -72,16 +72,16 @@ form button:active{
 .logout_form,
 .login_form{
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 40px;
+    right: 20px;
     width: unset;
-    background: brown !important;
+    background: aqua !important;
     padding: 3px 8px;
     height: unset;
-    color: #fff !important;
+    color: black !important;
 }
 .login_form{
-    background: rgb(56, 56, 231) !important;
+    background:  !important;
 }
 .message{
     font-size: 21px;
@@ -96,9 +96,8 @@ form button:active{
 .borred{
     border-color: red;
 }
-.colred,
-.message_error{
-    color: red !important;
+.colred{
+    color: red;
 }
 .message_info{
     color: orange !important;
