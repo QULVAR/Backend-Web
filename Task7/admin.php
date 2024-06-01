@@ -1,19 +1,11 @@
 <?php
-
   require('connection.php');
-
-  $haveAdmin = 0;
-  if(isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])){
-    $qu = $db->prepare("SELECT id FROM users WHERE role = 'admin' and login = ? and password = ?");
-    $qu->execute([$_SERVER['PHP_AUTH_USER'], md5($_SERVER['PHP_AUTH_PW'])]);
-    $haveAdmin = $qu->rowCount();
-  }
+  $haveAdmin = checkAdmin($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
 
   if (!$haveAdmin) {
     header('HTTP/1.1 401 Unanthorized');
     header('WWW-Authenticate: Basic realm="My site"');
     print('<h1>401 Требуется авторизация</h1>');
-    
     exit();
   }
 ?>
@@ -26,7 +18,7 @@
     <link rel="stylesheet" href="libs/bootstrap-4.0.0-dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="./style2.css">
     <script src="./libs/js/jquery-3.4.1.min.js"></script>
-    <title>Задание 6 (admin)</title>
+    <title>Задание 7 (admin)</title>
 </head>
 <body class="admin">
 
@@ -34,6 +26,14 @@
     <div><a href="#data">Информация</a></div>
     <div><a href="#analize">Статистика</a></div>
 </header>
+
+  <div>
+    <?php
+        $csrf_token = bin2hex(random_bytes(32));
+        $_SESSION['csrf_token_admin'] = $csrf_token;
+    ?>
+    <input type="hidden" name='csrf_token' id='csrf_token' value='<?php echo $csrf_token; ?>'>
+  </div>
 
   <table id="data">
     <thead>
@@ -54,14 +54,14 @@
       <?php
         $dbFD = $db->query("SELECT * FROM form_data ORDER BY id DESC");
         while($row = $dbFD->fetch(PDO::FETCH_ASSOC)){
-          echo '<tr data-id='.$row['id'].'>
-                  <td>'.$row['id'].'</td>
-                  <td>'.$row['fio'].'</td>
-                  <td>'.$row['phone'].'</td>
-                  <td>'.$row['email'].'</td>
-                  <td>'.date("d.m.Y", $row['birthday']).'</td>
-                  <td>'.(($row['gender'] == "male") ? "Мужской" : "Женский").'</td>
-                  <td class="wb">'.$row['biography'].'</td>
+          echo '<tr data-id='.checkInput($row['id']).'>
+                  <td>'.checkInput($row['id']).'</td>
+                  <td>'.checkInput($row['fio']).'</td>
+                  <td>'.checkInput($row['phone']).'</td>
+                  <td>'.checkInput($row['email']).'</td>
+                  <td>'.date("d.m.Y", checkInput($row['birthday'])).'</td>
+                  <td>'.((checkInput($row['gender']) == "male") ? "Мужской" : "Женский").'</td>
+                  <td class="wb">'.checkInput($row['biography']).'</td>
                   <td>';
           $dbl = $db->prepare("SELECT * FROM form_data_lang fd
                                 LEFT JOIN languages l ON l.id = fd.id_lang

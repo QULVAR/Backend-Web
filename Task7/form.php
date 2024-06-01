@@ -37,7 +37,7 @@
             <div class="errpodinp"><?php echo $messages['email']?></div>
         </div>
         <div>
-            <input class="w100 <?php echo ($errors['birthday'] != NULL) ? 'borred' : ''; ?>" value="<?php if(strtotime($values['birthday']) > 100000) echo $values['birthday']; ?>" type="date" name="birthday">
+            <input class="w100 <?php echo ($errors['birthday'] != NULL) ? 'borred' : ''; ?>" value="<?php if(strtotime($values['birthday']) != '') echo $values['birthday']; ?>" type="date" name="birthday">
             <div class="errpodinp"><?php echo $messages['birthday']?></div>
         </div>
         <div class="ent">

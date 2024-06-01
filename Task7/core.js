@@ -6,7 +6,7 @@ $('.remove').on('click', function(){
         $.ajax({
             type: "POST",
             url: './removeForm.php',
-            data: {'id': prId},
+            data: {'id': prId, 'csrf_token': $('#csrf_token').val()},
             success: function(e){
                 res = JSON.parse(e);
                 if((res.status == "success")){
