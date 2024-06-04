@@ -1,33 +1,34 @@
+const isLoggedIn = false;
+
+const messages = {
+    success: '',
+    info: '',
+    error: ''
+};
+
+const values = {
+    fio: '',
+    phone: '',
+    email: '',
+    birthday: '',
+    gender: '',
+    like_lang: [],
+    biography: '',
+    ozakomlen: true
+};
+
+const errors = {
+    fio: '',
+    phone: '',
+    email: '',
+    birthday: '',
+    gender: '',
+    like_lang: '',
+    biography: '',
+    ozakomlen: ''
+};
+
 function formLoad() {
-    const isLoggedIn = false;
-    
-    const messages = {
-        success: '',
-        info: '',
-        error: ''
-    };
-    
-    const values = {
-        fio: '',
-        phone: '',
-        email: '',
-        birthday: '',
-        gender: '',
-        like_lang: [],
-        biography: '',
-        ozakomlen: true
-    };
-    
-    const errors = {
-        fio: '',
-        phone: '',
-        email: '',
-        birthday: '',
-        gender: '',
-        like_lang: '',
-        biography: '',
-        ozakomlen: ''
-    };
 
     const xhr = new XMLHttpRequest();
     xhr.open("GET", "index.php", true);
@@ -74,6 +75,31 @@ function formLoad() {
     
     document.getElementById('oznakomlen').checked = values.ozakomlen;
     document.getElementById('oznakomlenError').innerText = errors.ozakomlen;
+}
+
+function submitForm() {
+    const form = document.getElementById('mainForm');
+    const formData = new FormData(form);
+    
+    for (const key in values) {
+        if (Array.isArray(values[key])) {
+            values[key].forEach(value => formData.append(key + '[]', value));
+        } else {
+            formData.append(key, values[key]);
+        }
+    }
+    
+    formData.set('csrf_token', sessionStorage.getItem('csrf_token'));
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "index.php", true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            console.log(xhr.responseText);
+        }
+    };
+    xhr.send(formData);
+    formLoad();
 }
 
 function genderSelect(){
