@@ -2,9 +2,9 @@ function formLoad() {
     const isLoggedIn = false;
     
     const messages = {
-        success: 'Your success message here',
-        info: 'Your info message here',
-        error: 'Your error message here'
+        success: '',
+        info: '',
+        error: ''
     };
     
     const values = {
@@ -12,14 +12,14 @@ function formLoad() {
         phone: '',
         email: '',
         birthday: '',
-        gender: 'male',
-        like_lang: ['JavaScript'],
+        gender: '',
+        like_lang: [],
         biography: '',
         ozakomlen: true
     };
     
     const errors = {
-        fio: 'Error message for fio',
+        fio: '',
         phone: '',
         email: '',
         birthday: '',
@@ -28,6 +28,20 @@ function formLoad() {
         biography: '',
         ozakomlen: ''
     };
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", "index.php", true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            isLoggedIn = response.isLoggedIn;
+            Object.assign(messages, response.messages);
+            Object.assign(values, response.values);
+            Object.assign(errors, response.errors);
+            console.log('Данные получены и присвоены', { isLoggedIn, messages, values, errors });
+        }
+    };
+    xhr.send();
     
     document.getElementById('logoutButton').style.display = isLoggedIn ? 'block' : 'none';
     document.getElementById('loginLink').style.display = isLoggedIn ? 'none' : 'block';
