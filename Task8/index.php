@@ -153,6 +153,16 @@
         exit();
       }
     }
+    header('Content-Type: application/json');
+    
+    $response = [
+      'isLoggedIn' => $log,
+      'messages' => $messages,
+      'values' => $values,
+      'errors' => $error
+    ];
+    
+    echo json_encode($response);
   }
   else {
     $csrf_tokens = (isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '');

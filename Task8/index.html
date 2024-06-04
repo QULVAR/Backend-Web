@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="libs/bootstrap-4.0.0-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="form.js" defer></script>
+    <script src="CSRFGenerate.js" defer></script>
+    <title>Задание 7</title>
+</head>
+<body>
+    <div class="pform">
+        <form action="" method="post">
+            <h3>Форма</h3>
+            <button type="submit" class="logout_form" name="logout_form" id="logoutButton">Выйти</button>
+            <a href="login.php" class="login_form" name="logout_form" id="loginLink">Войти</a>
+            <div class="message" id="successMessage"></div>
+            <div class="message message_info" id="infoMessage"></div>
+            <div class="message message_error" id="errorMessage"></div>
+            <div>
+                <input class="w100" type="text" name="fio" placeholder="ФИО" id="fio">
+                <div class="errpodinp" id="fioError"></div>
+            </div>
+            <div>
+                <input class="w100" type="tel" name="phone" placeholder="Телефон" id="phone">
+                <div class="errpodinp" id="phoneError"></div>
+            </div>
+            <div>
+                <input class="w100" type="email" name="email" placeholder="email" id="email">
+                <div class="errpodinp" id="emailError"></div>
+            </div>
+            <div>
+                <input class="w100" type="date" name="birthday" id="birthday">
+                <div class="errpodinp" id="birthdayError"></div>
+            </div>
+            <div class="ent">
+                <div>Пол:</div>
+                <label>
+                    <input type="radio" name="gender" value="male" id="genderMale">
+                    <span>Мужской</span>
+                </label>
+                <br>
+                <label>
+                    <input type="radio" name="gender" value="female" id="genderFemale">
+                    <span>Женский</span>
+                </label>
+                <div class="errpodinp" id="genderError"></div>
+            </div>
+            <div class="ent">
+                <select class="w100" name="like_lang[]" id="like_lang" multiple="multiple">
+                    <option disabled selected>Любимый язык программирования</option>
+                    <option value="Pascal">Pascal</option>
+                    <option value="C">C</option>
+                    <option value="C++">C++</option>
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="PHP">PHP</option>
+                    <option value="Python">Python</option>
+                    <option value="Java">Java</option>
+                    <option value="Haskel">Haskel</option>
+                    <option value="Clojure">Clojure</option>
+                    <option value="Prolog">Prolog</option>
+                    <option value="Scala">Scala</option>
+                </select>
+                <div class="errpodinp" id="likeLangError"></div>
+            </div>
+            <div>
+                <textarea name="biography" placeholder="Биография" id="biography"></textarea>
+                <div class="errpodinp" id="biographyError"></div>
+            </div>
+            <div>
+                <input type="checkbox" name="oznakomlen" id="oznakomlen">
+                <label for="oznakomlen">С контрактом ознакомлен (а)</label>
+                <div class="errpodinp" id="oznakomlenError"></div>
+            </div>
+            <button type="submit" id="submitButton">Отправить</button>
+        </form>
+    </div>
+</body>
+</html>
