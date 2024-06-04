@@ -154,7 +154,7 @@
       }
     }
     
-    include('form.php')
+    include('form.php');
   }
   else {
     $csrf_tokens = (isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '');
