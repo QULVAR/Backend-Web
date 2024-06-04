@@ -254,7 +254,7 @@
     val_empty('oznakomlen', "Ознакомьтесь с контрактом", empty($oznakomlen));
     
     if ($error) {
-      header('Location: index.heml'.(($getUid != NULL) ? '?uid='.$uid : ''));
+      header('Location: index.html'.(($getUid != NULL) ? '?uid='.$uid : ''));
       exit();
     }
     else {
