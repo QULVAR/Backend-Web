@@ -1,6 +1,6 @@
 <?php
   header('Content-Type: text/html; charset=UTF-8');
-  if(strpos($_SERVER['REQUEST_URI'], 'index.php') === false){
+  if(strpos($_SERVER['REQUEST_URI'], 'index.html') === false){
     header('Location: index.html');
     exit();
   }
@@ -42,7 +42,7 @@
   function user_exit(){
     del_cook_all(1);
     session_destroy();
-    header('Location: index.php');
+    header('Location: index.html');
     exit();
   }
 
@@ -177,7 +177,7 @@
 
     if($_SESSION['csrf_token'] != $csrf_tokens){
       set_cook('csrf_error', '1');
-      header('Location: index.php'.(($getUid != NULL) ? '?uid='.$uid : ''));
+      header('Location: index.html'.(($getUid != NULL) ? '?uid='.$uid : ''));
       exit();
     }
 
