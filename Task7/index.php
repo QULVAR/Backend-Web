@@ -1,7 +1,7 @@
 <?php
   header('Content-Type: text/html; charset=UTF-8');
   if(strpos($_SERVER['REQUEST_URI'], 'index.php') === false){
-    header('Location: index.html');
+    header('Location: index.php');
     exit();
   }
 
